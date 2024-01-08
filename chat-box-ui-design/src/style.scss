@@ -1,0 +1,223 @@
+@import url('https://fonts.googleapis.com/css?family=Nunito');
+
+
+body {
+  background-color: #77E;
+  margin: 0;
+  padding: 0;
+  font-family: nunito;
+  
+}
+
+.chat_button{
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 30px 40px;
+  height: 80px;
+  width: 80px;
+  text-align:center;
+  background-color: #Eff;
+  border-radius: 100px;
+  border: none;
+  font-size: 1.6rem;
+  color: #77E;
+  cursor: pointer;
+  transition: .5s ease-in-out;
+  &:hover {
+  border: 2px solid #Eff;
+  background-color: #77E;
+  color: #eff;
+}
+  
+  
+&:focus , &:active{
+  outline: none;
+   
+}
+
+}
+
+
+
+.chat_box {
+      max-height: 100%;
+    max-width: 100%;
+    height: 500px;
+    width: 350px;
+    background-color: #fff;
+    position: absolute;
+    bottom: 100px;
+    right: 100px;
+    display:none;
+    z-index: -1;
+    border-radius: 15px;
+    background-image: url(https://i.pinimg.com/originals/40/39/e0/4039e0f1ef08b7b965bacb4641a7af49.jpg);
+    box-shadow: 0 0 50px rgba(0,0,0,.45);
+   
+  
+  
+  &_header{
+      padding: 20px;
+      background: #e1e3e8;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+    text-align:center;
+    color: #77E;
+    font-weight: 600;
+    letter-spacing: .25rem;
+  }
+  
+  &_body {
+    padding: 16px;
+    height: 100%;
+    overflow-y:scroll;
+    height: 380px;
+    scroll-behavior: smooth;
+    &_self {
+      padding: 16px 15px;
+      float:right;
+      border-radius: 25px;
+      margin-right:10px;
+      background: #5A5EB9;
+      color:white;
+      margin: 10px 0;
+      clear:both;
+      max-width: 75%;
+    }
+    
+    &_other{
+    background: whitesmoke;
+    padding: 16px 15px;
+    color: #666;
+    max-width: 75%;
+    float: left;
+    margin-left: 10px;
+      margin: 10px 0;
+    position: relative;
+    margin-bottom: 20px;
+    border-radius: 25px;
+      clear:both;
+    }
+    
+    
+    &::-webkit-scrollbar
+{
+	width: 5px;  
+	background-color: #F5F5F5;
+}
+    
+    &::-webkit-scrollbar-thumb
+{
+	background-color: #77E;
+}
+  }
+  
+  &_footer {
+    max-width: 100%;
+    height: 80px;
+    position: absolute;
+    bottom: -31px;
+    & input {
+      max-width:100%;
+          width: 270px;
+    padding: 17px 15px;
+    border-bottom-left-radius: 15px;
+    
+    border: none;
+    position: fixed;
+    background-color: #eee;  
+      &:focus {
+        outline: none;
+      }
+      
+      &::placeholder {
+        font-family: nunito;
+      }
+      
+    }
+    
+    & button {
+              position: absolute;
+    bottom: 30px;
+    font-size: 1.4rem;
+    background: white;
+    box-shadow: none;
+    border: none;
+    border-bottom-right-radius: 16px;
+    color: #5A5EB9;
+    padding: 12px 15px;
+    left: 300px;
+      
+      &:focus{
+        outline: none;
+      }
+    }
+  }
+}
+ 
+.toggle{
+    display: block;
+ }
+
+
+
+.animated {
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 10%, 0);
+    transform: translate3d(0, 10%, 0);
+  }
+
+  to {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.fadeInUp {
+  -webkit-animation-name: fadeInUp;
+  animation-name: fadeInUp;
+}
+
+
+
+
+.brand{
+  
+  text-align:center !important;
+  margin-top: 25px;
+  
+  & a{
+    color: white;
+    text-decoration: none;
+  }
+}
+
+
+
+@media only screen and (max-width: 420px) {
+  #chatbar {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 8rem;
+    
+    & .chat_box_footer input {
+      width: 100%;
+    }
+    
+    & .chat_box_footer button {
+      width: 30%;
+      right: 0
+    }
+  }
+}

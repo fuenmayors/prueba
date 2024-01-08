@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Chat Box UI Design</title>
+  <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.1/css/all.css'><link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div id="chatPage" class="chat_page">
+  <button onclick="openChatBox()" class="chat_button">
+  <i id="chatOpen" class="fas fa-comments"></i>
+</button>
+
+
+<div id="chatbar" class="chat_box animated fadeInUp">
+  <div class="chat_box_header">
+    MENSAJES
+  </div>
+  <div id="chatBody" class="chat_box_body">
+      
+  </div>
+  <div class="chat_box_footer">
+    
+    <input type="text" id="MsgInput" placeholder="Enviar Mensaje" onkeydown="handleEnter(event)">
+    <button onclick="send()"><i class="fab fa-telegram-plane"></i></button>
+  </div>
+</div>
+</div>
+
+
+<!-- partial -->
+  <script src='https://code.jquery.com/jquery-3.4.0.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
+<style>
+@import url("https://fonts.googleapis.com/css?family=Nunito");
+body {
+  background-color: #77E;
+  margin: 0;
+  padding: 0;
+  font-family: nunito;
+}
+
+.chat_button {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  margin: 30px 40px;
+  height: 80px;
+  width: 80px;
+  text-align: center;
+  background-color: #Eff;
+  border-radius: 100px;
+  border: none;
+  font-size: 1.6rem;
+  color: #77E;
+  cursor: pointer;
+  transition: 0.5s ease-in-out;
+}
+.chat_button:hover {
+  border: 2px solid #Eff;
+  background-color: #77E;
+  color: #eff;
+}
+.chat_button:focus, .chat_button:active {
+  outline: none;
+}
+
+.chat_box {
+  max-height: 100%;
+  max-width: 100%;
+  height: 500px;
+  width: 350px;
+  background-color: #fff;
+  position: absolute;
+  bottom: 100px;
+  right: 100px;
+  display: none;
+  z-index: -1;
+  border-radius: 15px;
+  background-image: 
+  box-shadow: 0 0 50px rgba(0, 0, 0, 0.45);
+}
+.chat_box_header {
+  padding: 20px;
+  background: #e1e3e8;
+  border-top-left-radius: 15px;
+  border-top-right-radius: 15px;
+  text-align: center;
+  color: #77E;
+  font-weight: 600;
+  letter-spacing: 0.25rem;
+}
+.chat_box_body {
+  padding: 16px;
+  height: 100%;
+  overflow-y: scroll;
+  height: 380px;
+  scroll-behavior: smooth;
+}
+.chat_box_body_self {
+  padding: 16px 15px;
+  float: right;
+  border-radius: 25px;
+  margin-right: 10px;
+  background: #5A5EB9;
+  color: white;
+  margin: 10px 0;
+  clear: both;
+  max-width: 80%;
+  word-wrap: break-word; /* Agregado para evitar que las palabras se salgan del borde */
+}
+
+.chat_box_body_other {
+  background: whitesmoke;
+  padding: 16px 15px;
+  color: #666;
+  max-width: 80%;
+  float: left;
+  margin-left: 10px;
+  margin: 10px 0;
+  position: relative;
+  margin-bottom: 20px;
+  border-radius: 25px;
+  clear: both;
+  word-wrap: break-word; /* Agregado para evitar que las palabras se salgan del borde */
+}
+.chat_box_body::-webkit-scrollbar {
+  width: 5px;
+  background-color: #F5F5F5;
+}
+.chat_box_body::-webkit-scrollbar-thumb {
+  background-color: #77E;
+}
+.chat_box_footer {
+  max-width: 100%;
+  height: 80px;
+  position: absolute;
+  bottom: -31px;
+}
+.chat_box_footer input {
+  max-width: 100%;
+  width: 270px;
+  padding: 17px 15px;
+  border-bottom-left-radius: 15px;
+  border: none;
+  position: fixed;
+  background-color: #eee;
+}
+.chat_box_footer input:focus {
+  outline: none;
+}
+.chat_box_footer input::placeholder {
+  font-family: nunito;
+}
+.chat_box_footer button {
+  position: absolute;
+  bottom: 30px;
+  font-size: 1.4rem;
+  background: white;
+  box-shadow: none;
+  border: none;
+  border-bottom-right-radius: 16px;
+  color: #5A5EB9;
+  padding: 12px 15px;
+  left: 300px;
+}
+.chat_box_footer button:focus {
+  outline: none;
+}
+
+.toggle {
+  display: block;
+}
+
+.animated {
+  -webkit-animation-duration: 1s;
+  animation-duration: 1s;
+  -webkit-animation-fill-mode: both;
+  animation-fill-mode: both;
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 10%, 0);
+    transform: translate3d(0, 10%, 0);
+  }
+  to {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+.fadeInUp {
+  -webkit-animation-name: fadeInUp;
+  animation-name: fadeInUp;
+}
+
+.brand {
+  text-align: center !important;
+  margin-top: 25px;
+}
+.brand a {
+  color: white;
+  text-decoration: none;
+}
+
+@media only screen and (max-width: 420px) {
+  #chatbar {
+    width: 100%;
+    position: absolute;
+    left: 0;
+    bottom: 8rem;
+  }
+  #chatbar .chat_box_footer input {
+    width: 100%;
+  }
+  #chatbar .chat_box_footer button {
+    width: 30%;
+    right: 0;
+  }
+}
+</style>
+
+<script>
+	
+	var ischatopen = false;
+var ele = document.getElementById("chatbar");
+
+function openChatBox()
+{
+  if(ischatopen == false)
+    {
+       ele.classList.add("toggle");
+       ischatopen = true;
+       document.getElementById("chatOpen").classList.remove("fa-comments");
+document.getElementById("chatOpen").classList.add("fa-times");
+      
+    }
+  else {
+     ele.classList.remove("toggle");
+     ischatopen = false;
+    document.getElementById("chatOpen").classList.add("fa-comments");
+document.getElementById("chatOpen").classList.remove("fa-times");
+  }
+}
+
+
+
+function send() {
+    var chatBody = document.getElementById("chatBody");
+    var clientMsg = document.getElementById("MsgInput").value;  
+    document.getElementById('MsgInput').value = '';
+
+    var divClient = document.createElement("div");
+    divClient.classList.add("chat_box_body_self");
+    divClient.innerHTML = clientMsg;
+    chatBody.appendChild(divClient);
+
+    // Enviar el mensaje al servidor
+    fetch('/openai', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: clientMsg }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        var divBot = document.createElement("div");
+        divBot.classList.add("chat_box_body_other");
+        divBot.innerHTML = 'Respuesta: ' + data.bot_message;
+        chatBody.appendChild(divBot);
+        chatBody.scrollTop = chatBody.scrollHeight;
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+function handleEnter(event) {
+    // Verificar si la tecla presionada es "Enter" (código 13)
+    if (event.key === "Enter") {
+      send(); // Llamar a la función send() al presionar "Enter"
+    }
+  }
+
+</script>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>CodePen - Chat Box UI Design</title>
+  <link rel='stylesheet' href='https://use.fontawesome.com/releases/v5.8.1/css/all.css'><link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<div id="chatPage" class="chat_page">
+  <button onclick="openChatBox()" class="chat_button">
+  <i id="chatOpen" class="fas fa-comments"></i>
+</button>
+
+
+<div id="chatbar" class="chat_box animated fadeInUp">
+  <div class="chat_box_header">
+    MESSAGES
+  </div>
+  <div id="chatBody" class="chat_box_body">
+      
+  </div>
+  <div class="chat_box_footer">
+    
+    <input type="text" id="MsgInput" placeholder="Enter Message">
+    <button onclick="send()"><i class="fab fa-telegram-plane"></i></button>
+  </div>
+</div>
+</div>
+
+<div class="brand" >
+  <a href="http://www.smartcodehub.com">Best Angular Courses</a>
+</div>
+<!-- partial -->
+  <script src='https://code.jquery.com/jquery-3.4.0.min.js'></script><script  src="./script.js"></script>
+
+</body>
+</html>
