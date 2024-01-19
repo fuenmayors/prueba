@@ -252,32 +252,37 @@ document.getElementById("chatOpen").classList.remove("fa-times");
 
 
 function send() {
-    var chatBody = document.getElementById("chatBody");
-    var clientMsg = document.getElementById("MsgInput").value;  
-    document.getElementById('MsgInput').value = '';
 
-    var divClient = document.createElement("div");
-    divClient.classList.add("chat_box_body_self");
-    divClient.innerHTML = clientMsg;
-    chatBody.appendChild(divClient);
+  let api_key = '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';
+  let id_asistente_chatgpt = 'asst_OIXU1NEZaW0ZTKqJ9XTdpUiH';
+  let instrucciones ='Seras parte de una compañia llamada icarosoft y tendras el nombre de alfonso , la empresa trata de internet';
 
-    // Enviar el mensaje al servidor
-    fetch('/openai', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ message: clientMsg }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        var divBot = document.createElement("div");
-        divBot.classList.add("chat_box_body_other");
-        divBot.innerHTML = 'Respuesta: ' + data.bot_message;
-        chatBody.appendChild(divBot);
-        chatBody.scrollTop = chatBody.scrollHeight;
-    })
-    .catch(error => console.error('Error:', error));
+  var chatBody = document.getElementById("chatBody");
+  var clientMsg = document.getElementById("MsgInput").value;  
+  document.getElementById('MsgInput').value = '';
+
+  var divClient = document.createElement("div");
+  divClient.classList.add("chat_box_body_self");
+  divClient.innerHTML = clientMsg;
+  chatBody.appendChild(divClient);
+
+  // Enviar el mensaje al servidor
+  fetch('/ask_openai', {
+      method: 'POST',
+      headers: {
+          'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message: clientMsg ,api_key:api_key,id_asistente_chatgpt:id_asistente_chatgpt,instrucciones:instrucciones}),
+  })
+  .then(response => response.json())
+  .then(data => {
+      var divBot = document.createElement("div");
+      divBot.classList.add("chat_box_body_other");
+      divBot.innerHTML = 'Respuesta: ' + data.bot_message;
+      chatBody.appendChild(divBot);
+      chatBody.scrollTop = chatBody.scrollHeight;
+  })
+  .catch(error => console.error('Error:', error));
 }
 
 function handleEnter(event) {
