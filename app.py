@@ -6,6 +6,8 @@ from flask_cors import CORS
 import time
 import urllib3
 import re
+import json
+import requests
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -35,6 +37,7 @@ def ask_openai():
             ASSISTANT_ID=request.json.get('id_asistente_chatgpt')
             instruccion =request.json.get('instrucciones')
             
+            
             client = OpenAI(api_key=api_key)
             
             while True:
@@ -52,6 +55,8 @@ def ask_openai():
                             }
                         ],
                     )
+                    
+                    print(user_thread.id)
                 else:
                     # Update the existing thread with the new user message.
                     client.beta.threads.messages.create(
@@ -60,15 +65,11 @@ def ask_openai():
                         content=user_message,
                     )
 
-                print(user_thread.id)
-                
-                if user_message.lower() == "exit":
-                    break
-
                 # Submit the thread to the assistant (as a new run).
                 run = client.beta.threads.runs.create(
                     thread_id=user_thread.id,
-                    assistant_id=ASSISTANT_ID
+                    assistant_id=ASSISTANT_ID,
+                    additional_instructions=instruccion,
                 )
                 print(f"👉 Run Created: {run.id}")
 
@@ -83,41 +84,85 @@ def ask_openai():
 
                 # Print the latest message.
                 latest_message = messages[0]
-                final_message =latest_message.content[0].text.value
+                final_message =str(latest_message.content[0].text.value)
+                
+                    # Buscar el objeto JSON en el mensaje
+                inicio_json = final_message.find('{')
 
-                lista =["((function-status))","((function-debe))"]
+                fin_json = final_message.find('}', inicio_json) + 1
+                
+                if inicio_json != -1 and fin_json != -1:
+        
+                    json_string = final_message[inicio_json:fin_json]
+                    print(json_string)
+                    
+                    # Convertir el string JSON a un objeto JSON en Python
+                    json_data = json.loads(json_string)
+                    
+                    print(json_data)
+                    api_url = 'https://demo.icarosoft.com/api/api_consulta_datos/'
+                    
+                    
+                    # Realizar la solicitud GET a la API
+                    data = {"cedula": json_data["cedula"]} 
+                    response = requests.get(api_url,json=data)
 
-                for keyword in lista:
-                    if keyword in final_message:
-                        start_index = final_message.find(keyword) + len(keyword)
-                        end_index = final_message.find("))", start_index)
-                        if end_index != -1:
-                            valor_extraido = final_message[start_index:end_index].strip()
-                            print(f"Palabra clave encontrada: {keyword}, Valor extraído: {valor_extraido}")
-                            # Puedes almacenar valor_extraido en una variable o realizar otras acciones aquí
-                            break
-                else:
-                    #print(f"💬 Response: {latest_message.content[0].text.value}")
-                    return jsonify({'bot_message':final_message})     
-        response_data = {'error': 'Solicitud no válida. Falta la clave api_key '}
-        return make_response(jsonify(response_data), 400)   
-          
-          
-"""
-              # Tu cadena de texto
-                texto = latest_message.content[0].text.value
-                print(texto)
-                # Patrón a buscar
-                # Patrón a buscar
-                patron = '((prorroga_cliente?'
+                    # Verificar el código de estado de la respuesta
+                    if response.status_code == 200:
+                        try:
+                            # Intentar convertir la respuesta a un objeto JSON
+                            datos =response.json()
+                            
+                            if datos["status"] == 'err':
+                                print("Error en la consulta")
+                            else:
+                                #print(f" {datos['status']} {datos['saldo']} {datos['persona_contacto']}")
+                                _message_fin = f"la prorroga a sido realizada exitosamente estado del cliente {datos['status']} , el saldo que debe {datos['saldo']} , nombre {datos['persona_contacto']}"
+                                client.beta.threads.messages.create(
+                                    thread_id=user_thread.id,
+                                    role="user",
+                                    content=_message_fin,
+                                    )
+
+                                if user_message.lower() == "exit":
+                                    break
+
+                                # Submit the thread to the assistant (as a new run).
+                                run = client.beta.threads.runs.create(
+                                    thread_id=user_thread.id,
+                                    assistant_id=ASSISTANT_ID
+                                )
+                                print(f"👉 Run Created: {run.id}")
+
+                                # Wait for run to complete.
+                                while run.status != "completed":
+                                    run = client.beta.threads.runs.retrieve(thread_id=user_thread.id, run_id=run.id)
+                                    time.sleep(1)
+
+                                # Get the latest message from the thread.
+                                message_response = client.beta.threads.messages.list(thread_id=user_thread.id)
+                                messages = message_response.data
+                                latest_message = messages[0]
+                                
+                                final_message =str(latest_message.content[0].text.value)
+                                return jsonify({'bot_message':final_message})          
+                        except json.decoder.JSONDecodeError as e:
+                            print(f'Error al decodificar JSON: {e}')
+                    else:
+                        
+                        return jsonify({'bot_message':final_message})         
+                else:   
+                    
+                    return jsonify({'bot_message':final_message})       
+        else:       
+                    
+            return jsonify({'bot_message':final_message})
+                                  
+    response_data = {'error': 'Solicitud no válida. Falta la clave api_key '}
+    return make_response(jsonify(response_data), 400) 
 
                 
-                # Verificar si hay coincidencias
-                if patron in texto:
-                    
-                    return jsonify({'bot_message': 'hhhhh'}) 
 
-"""
 
 
 @app.route('/crear_asistente',methods=['POST'])
@@ -137,7 +182,7 @@ def crear_asistente():
         
         assistant = client.beta.assistants.create(
             name=nombre,
-            description=instrucciones,
+            instructions=instrucciones,
             tools=[{"type": "code_interpreter"}],
             model=model
         )
@@ -148,48 +193,6 @@ def crear_asistente():
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)#host='0.0.0.0', port=8080
 
-"""
-client = OpenAI(
-    #api_key=os.getenv("OPENAI_API_KEY")
-)
 
-assistant = client.beta.assistants.create(
-    name="Math Tutor",
-    instructions="You are a personal math tutor. Write and run code to answer math questions.",
-    tools=[{"type": "code_interpreter"}],
-    model="gpt-4-1106-preview"
-)
-
-thread =client.beta.threads.create()
-#print(thread)
-
-message = client.beta.threads.messages.create(
-    thread_id=thread.id,
-    role="user",
-    content="I need to solve the equation `3x + 11 = 14`. Can you help me?"
-)
-
-#print(message)
-
-run = client.beta.threads.runs.create(
-  thread_id=thread.id,
-  assistant_id=assistant.id,
-  
-)
-
-
-run = client.beta.threads.runs.retrieve(
-  thread_id=thread.id,
-  run_id=run.id
-)
-
-messages2 = client.beta.threads.messages.list(
-  thread_id=thread.id
-)
-
-#print(messages.data)
-
-for messageis in reversed(messages2.data):
-    print(messageis.role + ": " + messageis[0].content[0].text.value)"""
     
   
