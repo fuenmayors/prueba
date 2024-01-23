@@ -1,13 +1,19 @@
-import os
+#Necesarias
 from dotenv import load_dotenv
 from openai import OpenAI
-from flask import Flask, render_template, request, jsonify, make_response
-from flask_cors import CORS
-import time
 import urllib3
 import re
 import json
 import requests
+#FLASK
+from flask import Flask, render_template, request, jsonify, make_response,session
+from flask_cors import CORS
+#Utilidades
+import os
+import time
+import pdb
+
+
 
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
@@ -16,6 +22,8 @@ load_dotenv()
 
 app = Flask(__name__)
 CORS(app)
+
+app.secret_key = 'ClavemisteriosaOnline'
 
 ASSISTANT_ID= None
 user_thread = None
@@ -36,7 +44,9 @@ def ask_openai():
             api_key =request.json.get('api_key')
             ASSISTANT_ID=request.json.get('id_asistente_chatgpt')
             instruccion =request.json.get('instrucciones')
-            
+            user =request.json.get('usr_login')
+            session["user"] =user
+            print(session.get("user"))
             
             client = OpenAI(api_key=api_key)
             
@@ -44,7 +54,7 @@ def ask_openai():
                 
                 user_message = request.json.get('message')
                             
-                if user_thread is None:
+                if session.get("user_thread") is None or session.get("user")!=user:
                     # Create a new thread only if there is no existing thread.
                     user_thread = client.beta.threads.create(
                         messages=[
@@ -56,18 +66,18 @@ def ask_openai():
                         ],
                     )
                     
-                    print(user_thread.id)
+                    session["user_thread"]=user_thread.id
                 else:
                     # Update the existing thread with the new user message.
                     client.beta.threads.messages.create(
-                        thread_id=user_thread.id,
+                        thread_id=session.get("user_thread"),
                         role="user",
                         content=user_message,
                     )
 
                 # Submit the thread to the assistant (as a new run).
                 run = client.beta.threads.runs.create(
-                    thread_id=user_thread.id,
+                    thread_id=session.get("user_thread"),
                     assistant_id=ASSISTANT_ID,
                     additional_instructions=instruccion,
                 )
@@ -75,11 +85,11 @@ def ask_openai():
 
                 # Wait for run to complete.
                 while run.status != "completed":
-                    run = client.beta.threads.runs.retrieve(thread_id=user_thread.id, run_id=run.id)
+                    run = client.beta.threads.runs.retrieve(thread_id=session.get("user_thread"), run_id=run.id)
                     time.sleep(1)
 
                 # Get the latest message from the thread.
-                message_response = client.beta.threads.messages.list(thread_id=user_thread.id)
+                message_response = client.beta.threads.messages.list(thread_id=session.get("user_thread"))
                 messages = message_response.data
 
                 # Print the latest message.
@@ -90,7 +100,7 @@ def ask_openai():
                 inicio_json = final_message.find('{')
 
                 fin_json = final_message.find('}', inicio_json) + 1
-                
+                #pdb.set_trace()
                 if inicio_json != -1 and fin_json != -1:
         
                     json_string = final_message[inicio_json:fin_json]
@@ -119,7 +129,7 @@ def ask_openai():
                                 #print(f" {datos['status']} {datos['saldo']} {datos['persona_contacto']}")
                                 _message_fin = f"la prorroga a sido realizada exitosamente estado del cliente {datos['status']} , el saldo que debe {datos['saldo']} , nombre {datos['persona_contacto']}"
                                 client.beta.threads.messages.create(
-                                    thread_id=user_thread.id,
+                                    thread_id=session.get("user_thread"),
                                     role="user",
                                     content=_message_fin,
                                     )
@@ -129,18 +139,18 @@ def ask_openai():
 
                                 # Submit the thread to the assistant (as a new run).
                                 run = client.beta.threads.runs.create(
-                                    thread_id=user_thread.id,
+                                    thread_id=session.get("user_thread"),
                                     assistant_id=ASSISTANT_ID
                                 )
                                 print(f"👉 Run Created: {run.id}")
 
                                 # Wait for run to complete.
                                 while run.status != "completed":
-                                    run = client.beta.threads.runs.retrieve(thread_id=user_thread.id, run_id=run.id)
+                                    run = client.beta.threads.runs.retrieve(thread_id=session.get("user_thread"), run_id=run.id)
                                     time.sleep(1)
 
                                 # Get the latest message from the thread.
-                                message_response = client.beta.threads.messages.list(thread_id=user_thread.id)
+                                message_response = client.beta.threads.messages.list(thread_id=session.get("user_thread"))
                                 messages = message_response.data
                                 latest_message = messages[0]
                                 
