@@ -36,25 +36,29 @@ def index():
 def ask_openai():
     global ASSISTANT_ID
     global user_thread
-
     if request.method == 'POST':
-        
-        if request.json.get('api_key') :
-                        
-            api_key =request.json.get('api_key')
-            ASSISTANT_ID=request.json.get('id_asistente_chatgpt')
-            instruccion =request.json.get('instrucciones')
-            user =request.json.get('usr_login')
-            session["user"] =user
-            print(session.get("user"))
+        if request.json.get('api_key'):
+            api_key = request.json.get('api_key')
+            ASSISTANT_ID = request.json.get('id_asistente_chatgpt')
+            instruccion = request.json.get('instrucciones')
+            user = request.json.get('usr_login')
+            session_key = f"{user}_{session.get('session_id')}"
+            session['user'] = user
+            # Ensure a unique session key for each user
             
+
             client = OpenAI(api_key=api_key)
+
+            
+            user_message = request.json.get('message')
             
             while True:
                 
-                user_message = request.json.get('message')
-                            
-                if session.get("user_thread") is None or session.get("user")!=user:
+
+                # Retrieve or create a thread for the user
+                #user_thread = session.get("user_thread")
+                
+                if user_thread is None:
                     # Create a new thread only if there is no existing thread.
                     user_thread = client.beta.threads.create(
                         messages=[
@@ -65,111 +69,107 @@ def ask_openai():
                             }
                         ],
                     )
-                    
-                    session["user_thread"]=user_thread.id
+                    print(user_thread.id)
                 else:
                     # Update the existing thread with the new user message.
                     client.beta.threads.messages.create(
-                        thread_id=session.get("user_thread"),
+                        thread_id=user_thread.id,
                         role="user",
                         content=user_message,
                     )
+                    print(user_thread.id + " mismo hilo")
+
+                    
 
                 # Submit the thread to the assistant (as a new run).
                 run = client.beta.threads.runs.create(
-                    thread_id=session.get("user_thread"),
+                    thread_id=user_thread.id,
                     assistant_id=ASSISTANT_ID,
-                    additional_instructions=instruccion,
+                    instructions=instruccion,
                 )
                 print(f"👉 Run Created: {run.id}")
 
                 # Wait for run to complete.
                 while run.status != "completed":
-                    run = client.beta.threads.runs.retrieve(thread_id=session.get("user_thread"), run_id=run.id)
+                    run = client.beta.threads.runs.retrieve(thread_id=user_thread.id, run_id=run.id)
                     time.sleep(1)
 
                 # Get the latest message from the thread.
-                message_response = client.beta.threads.messages.list(thread_id=session.get("user_thread"))
+                message_response = client.beta.threads.messages.list(thread_id=user_thread.id)
                 messages = message_response.data
 
                 # Print the latest message.
                 latest_message = messages[0]
-                final_message =str(latest_message.content[0].text.value)
-                
-                    # Buscar el objeto JSON en el mensaje
-                inicio_json = final_message.find('{')
+                final_message = str(latest_message.content[0].text.value)
 
+                # Extract JSON object from the message
+                inicio_json = final_message.find('{')
                 fin_json = final_message.find('}', inicio_json) + 1
-                #pdb.set_trace()
+
                 if inicio_json != -1 and fin_json != -1:
-        
                     json_string = final_message[inicio_json:fin_json]
                     print(json_string)
-                    
-                    # Convertir el string JSON a un objeto JSON en Python
-                    json_data = json.loads(json_string)
-                    
-                    print(json_data)
-                    api_url = 'https://demo.icarosoft.com/api/api_consulta_datos/'
-                    
-                    
-                    # Realizar la solicitud GET a la API
-                    data = {"cedula": json_data["cedula"]} 
-                    response = requests.get(api_url,json=data)
 
-                    # Verificar el código de estado de la respuesta
+                    # Convert the JSON string to a Python JSON object
+                    json_data = json.loads(json_string)
+                    print(json_data)
+
+                    api_url = 'https://demo.icarosoft.com/api/api_consulta_datos/'
+
+                    # Make a GET request to the API
+                    data = {"cedula": json_data["cedula"]}
+                    response = requests.get(api_url, json=data)
+
+                    # Check the response status code
                     if response.status_code == 200:
                         try:
-                            # Intentar convertir la respuesta a un objeto JSON
-                            datos =response.json()
-                            
+                            # Try to convert the response to a JSON object
+                            datos = response.json()
+
                             if datos["status"] == 'err':
                                 print("Error en la consulta")
                             else:
-                                #print(f" {datos['status']} {datos['saldo']} {datos['persona_contacto']}")
-                                _message_fin = f"la prorroga a sido realizada exitosamente estado del cliente {datos['status']} , el saldo que debe {datos['saldo']} , nombre {datos['persona_contacto']}"
+                                _message_fin = f"La prórroga ha sido realizada exitosamente. Estado del cliente: {datos['status']}, saldo que debe: {datos['saldo']}, nombre: {datos['persona_contacto']}"
                                 client.beta.threads.messages.create(
-                                    thread_id=session.get("user_thread"),
+                                    thread_id=user_thread.id,
                                     role="user",
                                     content=_message_fin,
-                                    )
+                                )
 
                                 if user_message.lower() == "exit":
                                     break
 
                                 # Submit the thread to the assistant (as a new run).
                                 run = client.beta.threads.runs.create(
-                                    thread_id=session.get("user_thread"),
-                                    assistant_id=ASSISTANT_ID
+                                    thread_id=user_thread.id,
+                                    assistant_id=ASSISTANT_ID,
+                                    instructions=instruccion,
                                 )
                                 print(f"👉 Run Created: {run.id}")
 
                                 # Wait for run to complete.
                                 while run.status != "completed":
-                                    run = client.beta.threads.runs.retrieve(thread_id=session.get("user_thread"), run_id=run.id)
+                                    run = client.beta.threads.runs.retrieve(thread_id=user_thread.id, run_id=run.id)
                                     time.sleep(1)
 
                                 # Get the latest message from the thread.
-                                message_response = client.beta.threads.messages.list(thread_id=session.get("user_thread"))
+                                message_response = client.beta.threads.messages.list(thread_id=user_thread.id)
                                 messages = message_response.data
                                 latest_message = messages[0]
-                                
-                                final_message =str(latest_message.content[0].text.value)
-                                return jsonify({'bot_message':final_message})          
+
+                                final_message = str(latest_message.content[0].text.value)
+                                return jsonify({'bot_message': final_message})
                         except json.decoder.JSONDecodeError as e:
                             print(f'Error al decodificar JSON: {e}')
                     else:
-                        
-                        return jsonify({'bot_message':final_message})         
-                else:   
-                    
-                    return jsonify({'bot_message':final_message})       
-        else:       
-                    
-            return jsonify({'bot_message':final_message})
-                                  
+                        return jsonify({'bot_message': final_message})
+                else:
+                    return jsonify({'bot_message': final_message})
+        else:
+            return jsonify({'bot_message': 'Missing API key'})
+
     response_data = {'error': 'Solicitud no válida. Falta la clave api_key '}
-    return make_response(jsonify(response_data), 400) 
+    return make_response(jsonify(response_data), 400)
 
                 
 
