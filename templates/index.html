@@ -224,6 +224,28 @@ body {
     right: 0;
   }
 }
+
+  .typing-indicator {
+    background: whitesmoke;
+    padding: 16px 15px;
+    color: #666;
+    max-width: 80%;
+    float: left;
+    margin-left: 10px;
+    margin: 10px 0;
+    position: relative;
+    margin-bottom: 20px;
+    border-radius: 25px;
+    clear: both;
+    word-wrap: break-word;
+  }
+
+  .typing-indicator:before {
+    content: "Escribiendo...";
+    font-style: italic;
+    color: #666;
+  }
+
 </style>
 
 <script>
@@ -253,18 +275,34 @@ document.getElementById("chatOpen").classList.remove("fa-times");
 
 function send() {
 
-  let api_key = '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';
-  let id_asistente_chatgpt = 'asst_OIXU1NEZaW0ZTKqJ9XTdpUiH';
+  let api_key = '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';
+  let id_asistente_chatgpt = 'asst_MBd4YcwiiGFuNANzoZg4GXxI';
   let instrucciones ='Seras parte de una compañia llamada icarosoft y tendras el nombre de alfonso , la empresa trata de internet';
 
+  // Obtener elementos del DOM
+  var msgInput = document.getElementById("MsgInput");
+  var sendButton = document.querySelector(".chat_box_footer button");
   var chatBody = document.getElementById("chatBody");
-  var clientMsg = document.getElementById("MsgInput").value;  
-  document.getElementById('MsgInput').value = '';
 
+  // Ocultar botón e input mientras está escribiendo
+  msgInput.style.display = 'none';
+  sendButton.style.display = 'none';
+
+  // Obtener el mensaje del usuario
+  var clientMsg = msgInput.value;
+  msgInput.value = '';
+
+  // Crear y agregar el mensaje del usuario al chat
   var divClient = document.createElement("div");
   divClient.classList.add("chat_box_body_self");
   divClient.innerHTML = clientMsg;
   chatBody.appendChild(divClient);
+
+  // Mostrar indicador de escritura
+  var typingIndicator = document.createElement("div");
+  typingIndicator.classList.add("typing-indicator");
+  chatBody.appendChild(typingIndicator);
+  chatBody.scrollTop = chatBody.scrollHeight;
 
   // Enviar el mensaje al servidor
   fetch('/ask_openai', {
@@ -272,24 +310,44 @@ function send() {
       headers: {
           'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message: clientMsg ,api_key:api_key,id_asistente_chatgpt:id_asistente_chatgpt,instrucciones:instrucciones}),
+      body: JSON.stringify({
+          message: clientMsg,
+          api_key: api_key,
+          id_asistente_chatgpt: id_asistente_chatgpt,
+          instrucciones: instrucciones,
+      }),
   })
   .then(response => response.json())
   .then(data => {
+
+
+      // Eliminar indicador de escritura
+      chatBody.removeChild(typingIndicator);
+
+      // Crear y agregar la respuesta del bot al chat
       var divBot = document.createElement("div");
       divBot.classList.add("chat_box_body_other");
       divBot.innerHTML = 'Respuesta: ' + data.bot_message;
       chatBody.appendChild(divBot);
       chatBody.scrollTop = chatBody.scrollHeight;
+
+      // Mostrar nuevamente botón e input después de recibir la respuesta del bot
+      msgInput.style.display = 'block';
+      sendButton.style.display = 'block';
   })
-  .catch(error => console.error('Error:', error));
+  .catch(error => {
+      console.error('Error:', error);
+       // Mostrar nuevamente botón e input en caso de error
+      msgInput.style.display = 'block';
+      sendButton.style.display = 'block';
+  });
 }
 
 function handleEnter(event) {
-    // Verificar si la tecla presionada es "Enter" (código 13)
-    if (event.key === "Enter") {
-      send(); // Llamar a la función send() al presionar "Enter"
-    }
+  // Verificar si la tecla presionada es "Enter" (código 13)
+  if (event.key === "Enter") {
+    send(); // Llamar a la función send() al presionar "Enter"
   }
+}
 
 </script>
