@@ -12,6 +12,7 @@ from flask_cors import CORS
 import os
 import time
 import pdb
+from utils import get_or_create_session , save_session 
 
 
 
@@ -28,17 +29,7 @@ app.secret_key = 'ClavemisteriosaOnline'
 ASSISTANT_ID= None
 sessions = {}
 
-def get_or_create_session(user_id):
-    if user_id in sessions:
-        return sessions[user_id]
-    else:
-        # Crear una nueva sesión vacía
-        session = {}
-        sessions[user_id] = session
-        return session
 
-def save_session(user_id, session):
-    sessions[user_id] = session
 
 @app.route('/hola')
 def index():
@@ -111,7 +102,7 @@ def ask_openai():
 
             if inicio_json != -1 and fin_json != -1:
                 json_string = final_message[inicio_json:fin_json]
-                print(json_string)
+                
 
                 # Convert the JSON string to a Python JSON object
                 json_data = json.loads(json_string)
@@ -122,13 +113,13 @@ def ask_openai():
                 # Make a GET request to the API
                 data = {"cedula": json_data["cedula"]}
                 response = requests.get(api_url, json=data)
-
+                
                 # Check the response status code
                 if response.status_code == 200:
                     try:
                         # Try to convert the response to a JSON object
                         datos = response.json()
-
+                        print(datos)
                         if datos["status"] == 'err':
                             print("Error en la consulta")
                         else:

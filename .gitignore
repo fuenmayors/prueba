@@ -3,3 +3,7 @@
 /p2.py
 /p3.py
 /prueba.py
+
+/__pycache__
+utils.cpython-310.pyc
+/flask_session

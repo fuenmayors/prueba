@@ -1,7 +1,32 @@
 from openai import OpenAI
 import time
+from flask import session
 
+TIEMPO_EXPIRACION = 1800
 
+sessions = {}
+def get_or_create_session(user_id):
+    if user_id in sessions:
+        session, timestamp = sessions[user_id]
+        if time.time() - timestamp <= TIEMPO_EXPIRACION:
+            return session
+        else:
+            print(f" session eliminada {sessions[user_id]}")
+            print(sessions)
+            del sessions[user_id]
+            # La sesión ha expirado, crea una nueva sesión
+            return create_new_session(user_id)
+    else:
+        # Crear una nueva sesión vacía
+        return create_new_session(user_id)
+    
+def create_new_session(user_id):
+    session = {}
+    sessions[user_id] = (session, time.time())
+    return session
+
+def save_session(user_id, session):
+    sessions[user_id] = (session, time.time())
 
 def respuesta_openai(client,user_message,user_thread,instruccion,assistand_id,datos):
     
