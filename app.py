@@ -103,6 +103,8 @@ def ask_openai():
             if inicio_json != -1 and fin_json != -1:
                 json_string = final_message[inicio_json:fin_json]
                 
+                token =os.getenv("TOKEN_CONSULTA")
+                headers = {"Authorization": f"Bearer {token}"}
 
                 # Convert the JSON string to a Python JSON object
                 json_data = json.loads(json_string)
@@ -112,7 +114,7 @@ def ask_openai():
 
                 # Make a GET request to the API
                 data = {"cedula": json_data["cedula"]}
-                response = requests.get(api_url, json=data)
+                response = requests.get(api_url, headers=headers,json=data)
                 
                 # Check the response status code
                 if response.status_code == 200:
