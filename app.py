@@ -1,18 +1,19 @@
-#Necesarias
-from dotenv import load_dotenv
+#OpenAI
 from openai import OpenAI
-import urllib3
-import re
-import json
-import requests
 #FLASK
 from flask import Flask, render_template, request, jsonify, make_response,session
 from flask_cors import CORS
 #Utilidades
+from dotenv import load_dotenv
+import urllib3
+import re
+import json
+import requests
 import os
 import time
 import pdb
 from utils import get_or_create_session , save_session 
+from handler import *
 
 
 
@@ -37,7 +38,9 @@ def index():
 
 @app.route('/ask_openai', methods=['POST'])
 def ask_openai():
-    global ASSISTANT_ID
+    openai_handler = OpenAIHandler(request)
+    return openai_handler.handler_request()
+    """global ASSISTANT_ID
     global user_thread
     if request.method == 'POST':
         if request.json.get('api_key'):
@@ -113,8 +116,8 @@ def ask_openai():
                 api_url = 'https://demo.icarosoft.com/api/api_consulta_datos/'
 
                 # Make a GET request to the API
-                data = {"cedula": json_data["cedula"]}
-                response = requests.get(api_url, headers=headers,json=data)
+                data = {"metodo":json_data["metodo"],"cedula": json_data["cedula"]}
+                response = requests.get(api_url, headers=headers,params=data)
                 
                 # Check the response status code
                 if response.status_code == 200:
@@ -122,37 +125,39 @@ def ask_openai():
                         # Try to convert the response to a JSON object
                         datos = response.json()
                         print(datos)
-                        if datos["status"] == 'err':
-                            print("Error en la consulta")
+                        if datos["status"] != 200:
+                            message_fin= f"Soy la persona que te creo Interpreta este mensaje de error para el cliente: {datos["message"]}, ya que ellos no entienden y pideles que intenten o verifiquen nuevamente el dato que te pasaron"
                         else:
-                            _message_fin = f"La prórroga ha sido realizada exitosamente. Estado del cliente: {datos['status']}, saldo que debe: {datos['saldo']}, nombre: {datos['persona_contacto']}"
-                            client.beta.threads.messages.create(
-                                thread_id=user_session['user_thread'],
-                                role="user",
-                                content=_message_fin,
-                            )
+                            message_fin = f"Usa el 'menssage' y despues usa lo demas {datos} "
+                            
+                        
+                        client.beta.threads.messages.create(
+                            thread_id=user_session['user_thread'],
+                            role="user",
+                            content=message_fin,
+                        )
 
 
-                            # Submit the thread to the assistant (as a new run).
-                            run = client.beta.threads.runs.create(
-                                thread_id=user_session['user_thread'],
-                                assistant_id=ASSISTANT_ID,
-                                instructions=instruccion,
-                            )
-                            print(f"👉 Run Created: {run.id}")
+                        # Submit the thread to the assistant (as a new run).
+                        run = client.beta.threads.runs.create(
+                            thread_id=user_session['user_thread'],
+                            assistant_id=ASSISTANT_ID,
+                            instructions=instruccion,
+                        )
+                        print(f"👉 Run Created: {run.id}")
 
-                            # Wait for run to complete.
-                            while run.status != "completed":
-                                run = client.beta.threads.runs.retrieve(thread_id=user_session['user_thread'], run_id=run.id)
-                                time.sleep(1)
+                        # Wait for run to complete.
+                        while run.status != "completed":
+                            run = client.beta.threads.runs.retrieve(thread_id=user_session['user_thread'], run_id=run.id)
+                            time.sleep(1)
 
-                            # Get the latest message from the thread.
-                            message_response = client.beta.threads.messages.list(thread_id=user_session['user_thread'])
-                            messages = message_response.data
-                            latest_message = messages[0]
+                        # Get the latest message from the thread.
+                        message_response = client.beta.threads.messages.list(thread_id=user_session['user_thread'])
+                        messages = message_response.data
+                        latest_message = messages[0]
 
-                            final_message = str(latest_message.content[0].text.value)
-                            return jsonify({'bot_message': final_message})
+                        final_message = str(latest_message.content[0].text.value)
+                        return jsonify({'bot_message': final_message})
                     except json.decoder.JSONDecodeError as e:
                         print(f'Error al decodificar JSON: {e}')
                 else:
@@ -163,7 +168,7 @@ def ask_openai():
             return jsonify({'bot_message': 'Missing API key'})
 
     response_data = {'error': 'Solicitud no válida. Falta la clave api_key '}
-    return make_response(jsonify(response_data), 400)
+    return make_response(jsonify(response_data), 400)"""
 
                 
 

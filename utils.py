@@ -5,6 +5,7 @@ from flask import session
 TIEMPO_EXPIRACION = 1800
 
 sessions = {}
+#traer o crear session
 def get_or_create_session(user_id):
     if user_id in sessions:
         session, timestamp = sessions[user_id]
@@ -20,14 +21,17 @@ def get_or_create_session(user_id):
         # Crear una nueva sesión vacía
         return create_new_session(user_id)
     
+#crear nueva session
 def create_new_session(user_id):
     session = {}
     sessions[user_id] = (session, time.time())
     return session
 
+#guardar sessiomn
 def save_session(user_id, session):
     sessions[user_id] = (session, time.time())
 
+#respuestas openai 
 def respuesta_openai(client,user_message,user_thread,instruccion,assistand_id,datos):
     
                             
@@ -75,3 +79,6 @@ def respuesta_openai(client,user_message,user_thread,instruccion,assistand_id,da
     latest_message = messages[0]
     final_message =latest_message.content[0].text.value
     return final_message ,user_thread
+
+
+
