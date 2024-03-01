@@ -305,7 +305,7 @@ function send() {
   chatBody.scrollTop = chatBody.scrollHeight;
 
   // Enviar el mensaje al servidor
-  fetch('/ask_openai', {
+  fetch('/openaichat', {
       method: 'POST',
       headers: {
           'Content-Type': 'application/json',

@@ -1,10 +1,17 @@
+#.env 
 /.env
+#Entorno virtual
 /env
+#Prueba 2 y 3
 /p2.py
 /p3.py
+#Prueba en General
 /prueba.py
+#Aplicacion temporal
 /app_pr.py
 
-/__pycache__
-utils.cpython-310.pyc
+#Algunas sessiones de flask no tiene nada que ver con las sessiones de ahorita
 /flask_session
+#Cache , archivos basura
+__pycache__/handler.cpython-310.pyc
+__pycache__/utils.cpython-310.py
